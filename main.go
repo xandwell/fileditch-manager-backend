@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/xandwell/fileditch-manager-backend/internal"
 
 func main() {
-    fmt.Println("Hello, World!")
+	internal.Start()
 }
