@@ -1,4 +1,4 @@
-package handlers
+package utils
 
 type UploadResponse struct {
 	Success     bool          `json:"success"`

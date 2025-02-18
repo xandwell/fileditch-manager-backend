@@ -1,23 +1,23 @@
-package handlers
+package utils
 
 import (
 	"bytes"
-	"mime/multipart"
 	"encoding/json"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
-	"github.com/sqweek/dialog"
 	"os"
+
+	"github.com/sqweek/dialog"
 )
 
 func Request() {
-
 	filePath, err := dialog.File().Title("Select a file").Load()
 	if err != nil {
 		log.Fatalf("Failed to select file: %v", err)
 	}
-	
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		log.Fatalf("Failed to open file: %v", err)
@@ -66,9 +66,44 @@ func Request() {
 	if jsonErr != nil {
 		log.Fatalf("Error parsing JSON response: %v", jsonErr)
 	}
-	
+
 	log.Printf("Success: %s", jsonResponse.Description)
 	log.Printf("File name: %s", jsonResponse.Files[0].Name)
 	log.Printf("File name: %s", jsonResponse.Files[0].URL)
 }
 
+func HTTPRequest(file *os.File, method string, address string) (*http.Response, error) {
+	/* Sets up the HTTP Client*/
+	client := &http.Client{}
+
+	/* Prepare an empty buffer that we will write the contents of the multipart later*/
+	body := &bytes.Buffer{}
+
+	/* Initialize the multipart writer */
+	writer := multipart.NewWriter(body)
+
+	/* Write the contents of the requested file to the body buffer */
+	formWriter, err := writer.CreateFormFile("files[]", file.Name())
+	if err != nil {
+		return nil, err
+	}
+	io.Copy(formWriter, file)
+
+	writer.Close()
+
+	/* Now we make an empty request that will be completed later */
+	req, err := http.NewRequest(method, address, body)
+	if err != nil {
+		return nil, err
+	}
+
+	/* Now we complete the HTTP Request by setting the correct header */
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	/* Sends the HTTP Request using the client */
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
