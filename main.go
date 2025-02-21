@@ -1,10 +1,15 @@
 package main
 
 import (
-	"github.com/xandwell/fileditch-manager-backend/pkg/handlers"
+	"fmt"
+
+	"github.com/xandwell/fileditch-manager-backend/dump"
 )
 
 func main() {
 	/* TODO: Handle command execution and arguments */
-	handlers.Upload()
+	err := dump.Upload()
+	if err != nil {
+		fmt.Printf("Congrats")
+	}
 }
